@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Altus Sanctuary — Breathwork Readiness Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --bg: #1E3A38;
+    --surface: #234544;
+    --surface-2: #2A504E;
+    --sage: #8FA084;
+    --sage-dim: #5F7259;
+    --teal: #4A8079;
+    --gold: #C9A567;
+    --gold-dim: #9C8253;
+    --cream: #F3EFE5;
+    --muted: #9BAB94;
+    --line: rgba(243,239,229,0.12);
+    --danger: #C97F67;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Work Sans', sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .voice{font-family:'Fraunces', serif;}
+  .wrap{
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+  header.brand{
+    text-align:center;
+    margin: -2.5rem -1.5rem 2.5rem;
+    padding: 2.5rem 1.5rem 2rem;
+    background: #000;
+  }
+  .mark{width:64px; height:64px; margin:0 auto 0.75rem;}
+  header.brand h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: 2rem;
+    letter-spacing: 0.015em;
+    color: #FFFDF8;
+    margin: 0 0 0.5rem;
+  }
+  header.brand p.tagline{
+    margin:0;
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  header.brand p.sub{
+    margin: 0.9rem auto 0;
+    max-width: 440px;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  /* progress rings */
+  .progress{
+    display:flex;
+    justify-content:center;
+    gap: 10px;
+    margin: 2rem 0 2.5rem;
+  }
+  .ring{
+    width: 34px; height:34px;
+    border-radius:50%;
+    border: 1.5px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.75rem;
+    color: var(--muted);
+    position:relative;
+    transition: border-color .3s ease, color .3s ease;
+  }
+  .ring.done{
+    border-color: var(--sage);
+    color: var(--sage);
+    background: rgba(143,160,132,0.08);
+  }
+  .ring.active{
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,165,103,0.14);
+  }
+
+  .card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.75rem 1.5rem;
+  }
+  .section-label{
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin: 0 0 0.4rem;
+  }
+  h2.section-title{
+    font-family:'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.35rem;
+    margin: 0 0 0.6rem;
+  }
+  p.section-desc{
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin: 0 0 1.6rem;
+  }
+
+  /* Nijmegen items */
+  .item{
+    padding: 1rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .item:first-child{border-top:none; padding-top:0;}
+  .item p.q{
+    margin: 0 0 0.7rem;
+    font-size: 0.95rem;
+  }
+  .scale{
+    display:grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+  .scale button{
+    font-family:'Work Sans', sans-serif;
+    font-size: 0.68rem;
+    padding: 0.5rem 0.2rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor:pointer;
+    transition: all .15s ease;
+    line-height: 1.2;
+  }
+  .scale button:hover{border-color: var(--sage-dim);}
+  .scale button.sel{
+    background: var(--teal);
+    border-color: var(--teal);
+    color: var(--cream);
+  }
+
+  /* stopwatch */
+  .stopwatch{
+    text-align:center;
+    margin: 1.5rem 0;
+  }
+  .timeread{
+    font-family:'Fraunces', serif;
+    font-size: 3rem;
+    font-weight: 500;
+    color: var(--gold);
+    margin: 0.5rem 0 1.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .instructions{
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .instructions ol{margin: 0.4rem 0 0; padding-left: 1.2rem;}
+  .instructions li{margin-bottom:0.3rem;}
+
+  button.primary{
+    font-family:'Work Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.92rem;
+    background: var(--sage);
+    color: #16201B;
+    border: none;
+    border-radius: 999px;
+    padding: 0.75rem 1.7rem;
+    cursor: pointer;
+    transition: transform .12s ease, background .2s ease;
+  }
+  button.primary:hover{background:#9DAF92;}
+  button.primary:active{transform: scale(0.97);}
+  button.primary:disabled{opacity:0.4; cursor:not-allowed;}
+
+  button.stop{background: var(--danger); color:#241512;}
+  button.stop:hover{background:#D6937C;}
+
+  button.ghost{
+    font-family:'Work Sans', sans-serif;
+    font-size: 0.88rem;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.7rem 1.5rem;
+    cursor:pointer;
+  }
+  button.ghost:hover{border-color: var(--sage-dim); color: var(--cream);}
+
+  .btnrow{
+    display:flex;
+    justify-content:center;
+    gap: 0.75rem;
+    flex-wrap:wrap;
+  }
+
+  .fieldrow{
+    display:flex;
+    align-items:center;
+    gap:0.75rem;
+    justify-content:center;
+    margin: 1.25rem 0;
+  }
+  .fieldrow label{font-size:0.88rem; color: var(--muted);}
+  .fieldrow input[type=number]{
+    width: 90px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--cream);
+    font-family:'Fraunces', serif;
+    font-size: 1.1rem;
+    text-align:center;
+    padding: 0.5rem;
+  }
+  .error{
+    color: var(--danger);
+    font-size: 0.8rem;
+    text-align:center;
+    margin-top: 0.5rem;
+    min-height: 1em;
+  }
+
+  /* nasal breathing option cards */
+  .opt-list{display:flex; flex-direction:column; gap: 0.6rem;}
+  .opt{
+    display:flex; align-items:flex-start; gap: 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    cursor:pointer;
+    background: var(--surface-2);
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover{border-color: var(--sage-dim);}
+  .opt.sel{border-color: var(--gold); background: rgba(201,165,103,0.1);}
+  .opt .num{
+    font-family:'Fraunces', serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+    min-width: 22px;
+  }
+  .opt .lbl{font-size:0.92rem;}
+  .opt .lbl b{display:block; font-weight:500; margin-bottom:0.15rem;}
+
+  .navrow{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top: 2rem;
+  }
+
+  /* results */
+  .gauge-wrap{ text-align:center; margin: 0.5rem 0 1.75rem; }
+  .gauge-score{
+    font-family:'Fraunces', serif;
+    font-size: 2.6rem;
+    fill: var(--cream);
+    font-weight:500;
+  }
+  .gauge-label{ font-size: 0.7rem; fill: var(--muted); letter-spacing:0.1em; }
+
+  .tier-badge{
+    display:inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform:uppercase;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 0.9rem;
+  }
+  .tier-1{background: rgba(201,127,103,0.16); color:#E3A48F;}
+  .tier-2{background: rgba(201,165,103,0.16); color: var(--gold);}
+  .tier-3{background: rgba(143,160,132,0.16); color: var(--sage);}
+
+  .rec p{font-size:0.95rem; color: var(--cream);}
+  .rec p.rec-sub{color: var(--muted); font-size:0.88rem;}
+
+  .breakdown{
+    margin-top: 1.75rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.25rem;
+  }
+  .brow{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size: 0.85rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .brow:last-child{border-bottom:none;}
+  .brow .bval{color: var(--gold); font-family:'Fraunces', serif;}
+
+  .alertbox{
+    background: rgba(201,127,103,0.1);
+    border: 1px solid rgba(201,127,103,0.35);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    font-size: 0.85rem;
+    color: #E3A48F;
+    margin-top: 1.5rem;
+  }
+
+  .exercises{
+    margin-top: 1.75rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.25rem;
+  }
+  .exlist{display:flex; flex-direction:column; gap: 0.85rem;}
+  .exitem{
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.95rem 1.1rem;
+  }
+  .ex-title{
+    font-family:'Fraunces', serif;
+    font-size: 1.02rem;
+    color: var(--gold);
+    margin: 0 0 0.5rem;
+  }
+  .ex-how, .ex-why{
+    font-size: 0.85rem;
+    color: var(--cream);
+    margin: 0 0 0.4rem;
+    line-height: 1.5;
+  }
+  .ex-why{color: var(--muted); margin-bottom:0;}
+  .ex-how b, .ex-why b{color: var(--sage); font-weight:500;}
+
+  .downloadrow{
+    margin-top: 1.9rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.5rem;
+    text-align:center;
+  }
+  .downloadrow label{
+    display:block;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .downloadrow input{
+    width:100%;
+    max-width: 320px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--cream);
+    font-family:'Work Sans', sans-serif;
+    font-size: 0.92rem;
+    padding: 0.65rem 0.85rem;
+  }
+
+  @media print{
+    body{ background:#fff !important; color:#111 !important; }
+    .wrap{ max-width: 100%; padding: 0; }
+    header.brand{ background:#111 !important; margin: 0 0 1.5rem; }
+    .progress, .downloadrow, .navrow{ display:none !important; }
+    .card{ background:#fff !important; border:none !important; padding:0; }
+    .section-desc, .rec-sub, .ex-why{ color:#444 !important; }
+    .brow, .item, .exitem{ border-color:#ddd !important; }
+    .exitem{ background:#f7f5f0 !important; break-inside: avoid; }
+    .tier-badge{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .gauge-score, .gauge-label{ fill:#111 !important; }
+  }
+
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="brand">
+    <svg class="mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="72" cy="24" r="9" fill="#C9A567"/>
+      <polygon points="10,78 32,38 50,66" fill="#8FA084"/>
+      <polygon points="34,78 58,26 82,78" fill="#4A8079"/>
+      <polygon points="60,78 80,46 96,78" fill="#C9A567" opacity="0.9"/>
+    </svg>
+    <h1>Altus Sanctuary</h1>
+    <p class="tagline">Breath · Mind · Nourishment</p>
+    <p class="sub">Breathwork readiness assessment — five short checks to understand where your breathing stands today, and what kind of session will serve you best.</p>
+  </header>
+
+  <div class="progress" id="progress"></div>
+
+  <div class="card" id="cardArea"></div>
+
+</div>
+
+<script>
+const SECTIONS = ['nijmegen','bolt','cadence','exhale','nasal'];
+const SECTION_LABELS = ['Symptoms','BOLT','Cadence','Exhale','Nasal'];
+
+const state = {
+  current: 0,
+  nijmegen: new Array(16).fill(null),
+  bolt: null,
+  cadence: null,
+  exhale: null,
+  nasal: null
+};
+
+const NIJMEGEN_ITEMS = [
+  "Chest pain or discomfort",
+  "Feeling tense",
+  "Blurred vision",
+  "Dizziness or light-headedness",
+  "Feeling confused or losing touch with your surroundings",
+  "Faster or deeper breathing than usual",
+  "Shortness of breath",
+  "A tight feeling across the chest",
+  "A bloated feeling in the stomach",
+  "Tingling sensation in the fingers",
+  "Difficulty taking a full, deep breath",
+  "Stiffness in the fingers or arms",
+  "A tight feeling around the mouth",
+  "Cold hands or feet",
+  "Heart racing or pounding",
+  "Feelings of anxiety or nervousness"
+];
+const NIJMEGEN_SCALE = ["Never","Rarely","Sometimes","Often","Very often"];
+
+function renderProgress(){
+  const el = document.getElementById('progress');
+  el.innerHTML = SECTIONS.map((s,i)=>{
+    let cls = 'ring';
+    if(i < state.current) cls += ' done';
+    else if(i === state.current) cls += ' active';
+    return `<div class="${cls}" title="${SECTION_LABELS[i]}">${i+1}</div>`;
+  }).join('');
+}
+
+function goTo(idx){
+  state.current = idx;
+  renderProgress();
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function render(){
+  const map = [renderNijmegen, renderBolt, renderCadence, renderExhale, renderNasal, renderResults];
+  map[state.current]();
+}
+
+/* ---------------- Section 1: Nijmegen ---------------- */
+function renderNijmegen(){
+  const card = document.getElementById('cardArea');
+  card.innerHTML = `
+    <p class="section-label">Section 1 of 5</p>
+    <h2 class="section-title">Breathing pattern awareness</h2>
+    <p class="section-desc">Rate how often you experience each of the following. This is a general awareness check, not a diagnosis — if your results suggest significant symptoms, we'll recommend speaking with a doctor alongside your breathwork practice.</p>
+    <div id="items"></div>
+    <p class="error" id="err"></p>
+    <div class="navrow">
+      <span></span>
+      <button class="primary" id="next">Continue</button>
+    </div>
+  `;
+  const itemsEl = document.getElementById('items');
+  itemsEl.innerHTML = NIJMEGEN_ITEMS.map((q,i)=>`
+    <div class="item">
+      <p class="q">${i+1}. ${q}</p>
+      <div class="scale" data-idx="${i}">
+        ${NIJMEGEN_SCALE.map((lab,v)=>`<button type="button" class="${state.nijmegen[i]===v?'sel':''}" data-val="${v}">${lab}</button>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  itemsEl.querySelectorAll('.scale').forEach(scaleEl=>{
+    const idx = parseInt(scaleEl.dataset.idx,10);
+    scaleEl.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        state.nijmegen[idx] = parseInt(btn.dataset.val,10);
+        scaleEl.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));
+        btn.classList.add('sel');
+        document.getElementById('err').textContent = '';
+      });
+    });
+  });
+
+  document.getElementById('next').addEventListener('click', ()=>{
+    if(state.nijmegen.some(v=>v===null)){
+      document.getElementById('err').textContent = 'Please answer every item before continuing.';
+      return;
+    }
+    goTo(1);
+  });
+}
+
+/* ---------------- Section 2: BOLT ---------------- */
+function renderBolt(){
+  const card = document.getElementById('cardArea');
+  card.innerHTML = `
+    <p class="section-label">Section 2 of 5</p>
+    <h2 class="section-title">BOLT score</h2>
+    <p class="section-desc">The Body Oxygen Level Test measures how comfortably your body tolerates a pause in breathing — a useful marker of CO2 tolerance and functional breathing.</p>
+    <div class="instructions">
+      <b>How to take it:</b>
+      <ol>
+        <li>Breathe in gently through your nose, then let a normal breath out through your nose.</li>
+        <li>Pinch your nose and start the timer.</li>
+        <li>Stop as soon as you feel the first clear urge to breathe — not when you're gasping.</li>
+      </ol>
+    </div>
+    <div class="stopwatch">
+      <div class="timeread" id="tread">0.0s</div>
+      <div class="btnrow" id="swBtns">
+        <button class="primary" id="startBtn">Start timer</button>
+      </div>
+    </div>
+    <div class="fieldrow">
+      <label for="manualBolt">Or enter seconds manually:</label>
+      <input type="number" id="manualBolt" min="0" step="1" value="${state.bolt ?? ''}">
+    </div>
+    <p class="error" id="err"></p>
+    <div class="navrow">
+      <button class="ghost" id="back">Back</button>
+      <button class="primary" id="next">Continue</button>
+    </div>
+  `;
+  buildStopwatch({
+    onStop: (secs)=>{ state.bolt = secs; document.getElementById('manualBolt').value = secs; }
+  });
+  document.getElementById('manualBolt').addEventListener('input', (e)=>{
+    state.bolt = e.target.value === '' ? null : parseFloat(e.target.value);
+  });
+  document.getElementById('back').addEventListener('click', ()=>goTo(0));
+  document.getElementById('next').addEventListener('click', ()=>{
+    if(state.bolt === null || isNaN(state.bolt) || state.bolt < 0){
+      document.getElementById('err').textContent = 'Enter a BOLT time (seconds) before continuing.';
+      return;
+    }
+    goTo(2);
+  });
+}
+
+/* ---------------- Section 3: Cadence ---------------- */
+function renderCadence(){
+  const card = document.getElementById('cardArea');
+  card.innerHTML = `
+    <p class="section-label">Section 3 of 5</p>
+    <h2 class="section-title">Breathing cadence</h2>
+    <p class="section-desc">Run the 60-second timer while breathing normally, and count how many full breaths (in and out) you take. Enter that number below.</p>
+    <div class="stopwatch">
+      <div class="timeread" id="tread">60s</div>
+      <div class="btnrow" id="swBtns">
+        <button class="primary" id="startBtn">Start 60s timer</button>
+      </div>
+    </div>
+    <div class="fieldrow">
+      <label for="manualCadence">Breaths counted:</label>
+      <input type="number" id="manualCadence" min="0" step="1" value="${state.cadence ?? ''}">
+    </div>
+    <p class="error" id="err"></p>
+    <div class="navrow">
+      <button class="ghost" id="back">Back</button>
+      <button class="primary" id="next">Continue</button>
+    </div>
+  `;
+  buildCountdown(60);
+  document.getElementById('manualCadence').addEventListener('input', (e)=>{
+    state.cadence = e.target.value === '' ? null : parseFloat(e.target.value);
+  });
+  document.getElementById('back').addEventListener('click', ()=>goTo(1));
+  document.getElementById('next').addEventListener('click', ()=>{
+    if(state.cadence === null || isNaN(state.cadence) || state.cadence < 0){
+      document.getElementById('err').textContent = 'Enter the number of breaths counted before continuing.';
+      return;
+    }
+    goTo(3);
+  });
+}
+
+/* ---------------- Section 4: Exhale ---------------- */
+function renderExhale(){
+  const card = document.getElementById('cardArea');
+  card.innerHTML = `
+    <p class="section-label">Section 4 of 5</p>
+    <h2 class="section-title">Sustained exhale</h2>
+    <p class="section-desc">Take a full breath in, then exhale slowly and continuously for as long as you comfortably can. Time the exhale from start to finish.</p>
+    <div class="stopwatch">
+      <div class="timeread" id="tread">0.0s</div>
+      <div class="btnrow" id="swBtns">
+        <button class="primary" id="startBtn">Start timer</button>
+      </div>
+    </div>
+    <div class="fieldrow">
+      <label for="manualExhale">Or enter seconds manually:</label>
+      <input type="number" id="manualExhale" min="0" step="1" value="${state.exhale ?? ''}">
+    </div>
+    <p class="error" id="err"></p>
+    <div class="navrow">
+      <button class="ghost" id="back">Back</button>
+      <button class="primary" id="next">Continue</button>
+    </div>
+  `;
+  buildStopwatch({
+    onStop: (secs)=>{ state.exhale = secs; document.getElementById('manualExhale').value = secs; }
+  });
+  document.getElementById('manualExhale').addEventListener('input', (e)=>{
+    state.exhale = e.target.value === '' ? null : parseFloat(e.target.value);
+  });
+  document.getElementById('back').addEventListener('click', ()=>goTo(2));
+  document.getElementById('next').addEventListener('click', ()=>{
+    if(state.exhale === null || isNaN(state.exhale) || state.exhale < 0){
+      document.getElementById('err').textContent = 'Enter an exhale time (seconds) before continuing.';
+      return;
+    }
+    goTo(4);
+  });
+}
+
+/* ---------------- Section 5: Nasal breathing ---------------- */
+const NASAL_OPTIONS = [
+  {v:0, t:"Cannot maintain nasal breathing at rest"},
+  {v:1, t:"Nasal breathing at rest only"},
+  {v:2, t:"Nasal breathing during light activity"},
+  {v:3, t:"Nasal breathing during moderate activity"},
+  {v:4, t:"Nasal breathing during vigorous activity"}
+];
+function renderNasal(){
+  const card = document.getElementById('cardArea');
+  card.innerHTML = `
+    <p class="section-label">Section 5 of 5</p>
+    <h2 class="section-title">Nasal breathing capacity</h2>
+    <p class="section-desc">What's the highest activity level at which you can maintain nasal-only breathing?</p>
+    <div class="opt-list" id="opts">
+      ${NASAL_OPTIONS.map(o=>`
+        <div class="opt ${state.nasal===o.v?'sel':''}" data-val="${o.v}">
+          <span class="num">${o.v}</span>
+          <span class="lbl"><b>${o.t}</b></span>
+        </div>
+      `).join('')}
+    </div>
+    <p class="error" id="err"></p>
+    <div class="navrow">
+      <button class="ghost" id="back">Back</button>
+      <button class="primary" id="next">See results</button>
+    </div>
+  `;
+  document.querySelectorAll('#opts .opt').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      state.nasal = parseInt(el.dataset.val,10);
+      document.querySelectorAll('#opts .opt').forEach(o=>o.classList.remove('sel'));
+      el.classList.add('sel');
+      document.getElementById('err').textContent = '';
+    });
+  });
+  document.getElementById('back').addEventListener('click', ()=>goTo(3));
+  document.getElementById('next').addEventListener('click', ()=>{
+    if(state.nasal === null){
+      document.getElementById('err').textContent = 'Select a level before continuing.';
+      return;
+    }
+    goTo(5);
+  });
+}
+
+/* ---------------- Stopwatch helpers ---------------- */
+function buildStopwatch({onStop}){
+  let running = false;
+  let startTime = null;
+  let rafId = null;
+  const readEl = document.getElementById('tread');
+  const btnsEl = document.getElementById('swBtns');
+
+  function tick(){
+    const elapsed = (performance.now() - startTime) / 1000;
+    readEl.textContent = elapsed.toFixed(1) + 's';
+    if(running) rafId = requestAnimationFrame(tick);
+  }
+  function start(){
+    running = true;
+    startTime = performance.now();
+    btnsEl.innerHTML = `<button class="primary stop" id="stopBtn">Stop</button>`;
+    document.getElementById('stopBtn').addEventListener('click', stop);
+    rafId = requestAnimationFrame(tick);
+  }
+  function stop(){
+    running = false;
+    cancelAnimationFrame(rafId);
+    const elapsed = (performance.now() - startTime) / 1000;
+    readEl.textContent = elapsed.toFixed(1) + 's';
+    onStop(Math.round(elapsed*10)/10);
+    btnsEl.innerHTML = `<button class="ghost" id="startBtn">Restart timer</button>`;
+    document.getElementById('startBtn').addEventListener('click', start);
+  }
+  document.getElementById('startBtn').addEventListener('click', start);
+}
+
+function buildCountdown(totalSecs){
+  let running = false;
+  let startTime = null;
+  let rafId = null;
+  const readEl = document.getElementById('tread');
+  const btnsEl = document.getElementById('swBtns');
+
+  function tick(){
+    const elapsed = (performance.now() - startTime) / 1000;
+    const remain = Math.max(0, totalSecs - elapsed);
+    readEl.textContent = Math.ceil(remain) + 's';
+    if(remain <= 0){
+      running = false;
+      readEl.textContent = 'Time';
+      btnsEl.innerHTML = `<button class="ghost" id="startBtn">Restart timer</button>`;
+      document.getElementById('startBtn').addEventListener('click', start);
+      return;
+    }
+    if(running) rafId = requestAnimationFrame(tick);
+  }
+  function start(){
+    running = true;
+    startTime = performance.now();
+    btnsEl.innerHTML = `<button class="ghost stop" id="stopBtn">Cancel</button>`;
+    document.getElementById('stopBtn').addEventListener('click', ()=>{
+      running = false;
+      cancelAnimationFrame(rafId);
+      readEl.textContent = '60s';
+      btnsEl.innerHTML = `<button class="primary" id="startBtn">Start 60s timer</button>`;
+      document.getElementById('startBtn').addEventListener('click', start);
+    });
+    rafId = requestAnimationFrame(tick);
+  }
+  document.getElementById('startBtn').addEventListener('click', start);
+}
+
+/* ---------------- Scoring ---------------- */
+function bandNijmegen(total){
+  if(total <= 15) return 4;
+  if(total <= 23) return 3;
+  if(total <= 35) return 2;
+  if(total <= 49) return 1;
+  return 0;
+}
+function bandBolt(s){
+  if(s >= 40) return 4;
+  if(s >= 31) return 3;
+  if(s >= 21) return 2;
+  if(s >= 11) return 1;
+  return 0;
+}
+function bandCadence(b){
+  if(b <= 8) return 4;
+  if(b <= 12) return 3;
+  if(b <= 16) return 2;
+  if(b <= 20) return 1;
+  return 0;
+}
+function bandExhale(s){
+  if(s >= 45) return 4;
+  if(s >= 35) return 3;
+  if(s >= 25) return 2;
+  if(s >= 15) return 1;
+  return 0;
+}
+
+function computeScores(){
+  const nijmegenTotal = state.nijmegen.reduce((a,b)=>a+b,0);
+  const sNijmegen = bandNijmegen(nijmegenTotal);
+  const sBolt = bandBolt(state.bolt);
+  const sCadence = bandCadence(state.cadence);
+  const sExhale = bandExhale(state.exhale);
+  const sNasal = state.nasal;
+  const sum = sNijmegen + sBolt + sCadence + sExhale + sNasal;
+  const pct = Math.round((sum/20)*100);
+  return {nijmegenTotal, sNijmegen, sBolt, sCadence, sExhale, sNasal, sum, pct};
+}
+
+const EXERCISES = {
+  1: [
+    { title:"Extended-exhale breathing", how:"Inhale gently through the nose for 4 counts, exhale slowly through the nose for 6–8 counts. Repeat for 2–3 minutes.", why:"Lengthening the exhale activates the parasympathetic (rest-and-digest) response — a gentle, safe starting point for a more reactive nervous system." },
+    { title:"Physiological sigh", how:"Take a normal inhale through the nose, then a short second sip of air on top, followed by a long, slow exhale through the mouth. Repeat 3–5 times.", why:"A quick, well-tolerated way to lower activation in the moment without any breath-holding." },
+    { title:"Simple nasal breathing practice", how:"Spend 5–10 minutes breathing only through the nose at rest, keeping breaths small and quiet.", why:"Builds tolerance and comfort with nasal breathing before layering in more structured techniques." }
+  ],
+  2: [
+    { title:"Box breathing", how:"Inhale for 4, hold for 4, exhale for 4, hold for 4. Repeat for 4–5 rounds.", why:"A structured, even rhythm that builds breath control and steadies the nervous system." },
+    { title:"Coherent breathing", how:"Inhale for 5 counts, exhale for 5 counts, with no pause. Continue for 5 minutes.", why:"This roughly 6-breaths-per-minute pace is associated with balanced heart-rate variability and calm alertness." },
+    { title:"Extended exhale with a light hold", how:"Inhale for 4, exhale for 6, then hold gently at the bottom for 2 before the next inhale.", why:"Builds on your existing exhale control and introduces a small, manageable pause." }
+  ],
+  3: [
+    { title:"4-7-8 breathing", how:"Inhale through the nose for 4, hold for 7, exhale slowly through the mouth for 8. Repeat for 4 rounds.", why:"A longer hold and exhale that suits a nervous system with good existing CO2 tolerance." },
+    { title:"Alternate nostril breathing", how:"Using your thumb and finger to close one nostril at a time, inhale through one side, switch, and exhale through the other. Continue, alternating, for 5 minutes.", why:"Supports balance and focus, and is well suited to those with strong nasal breathing capacity already." },
+    { title:"CO2 tolerance table (guided)", how:"A structured sequence of breath holds with short recovery breathing between rounds — best learned with guidance in a session before practising solo.", why:"Builds on strong existing BOLT scores to further extend comfortable CO2 tolerance." }
+  ]
+};
+
+function tierFor(pct){
+  if(pct < 34) return {n:1, cls:'tier-1', label:'Foundations first',
+    text:"Your breathing shows several patterns worth gently rebuilding before deeper practice — think in-chest tension, faster cadence, or reduced CO2 tolerance. We'd recommend starting with a private 1:1 introductory session focused on nasal breathing and downregulation, at a slow, well-supported pace.",
+    sub:"Group or intensive sessions can wait until your foundations feel steadier."};
+  if(pct < 67) return {n:2, cls:'tier-2', label:'Building readiness',
+    text:"You've got solid groundwork in place, with some areas still developing. A guided small-group breathwork session, with coaching on pacing and nasal breathing, will help consolidate your progress before moving into longer or more intensive work.",
+    sub:"Ideal candidate for our foundational group sessions."};
+  return {n:3, cls:'tier-3', label:'Fully ready',
+    text:"Your results show strong breath control, CO2 tolerance and nervous system regulation across the board. You're well suited to our immersive or advanced breathwork sessions.",
+    sub:"Ready for deeper, longer-form practice."};
+}
+
+function renderResults(){
+  const card = document.getElementById('cardArea');
+  const r = computeScores();
+  const t = tierFor(r.pct);
+  const circumference = 2 * Math.PI * 54;
+  const offset = circumference * (1 - r.pct/100);
+
+  card.innerHTML = `
+    <p class="section-label">Your results</p>
+    <h2 class="section-title">Breathwork readiness</h2>
+
+    <div class="gauge-wrap">
+      <svg width="180" height="180" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="54" fill="none" stroke="rgba(243,239,229,0.1)" stroke-width="10"/>
+        <circle cx="70" cy="70" r="54" fill="none" stroke="#C9A567" stroke-width="10"
+          stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+          transform="rotate(-90 70 70)"/>
+        <text x="70" y="76" text-anchor="middle" class="gauge-score">${r.pct}%</text>
+        <text x="70" y="94" text-anchor="middle" class="gauge-label">READINESS</text>
+      </svg>
+    </div>
+
+    <div style="text-align:center;">
+      <span class="tier-badge ${t.cls}">${t.label}</span>
+    </div>
+    <div class="rec" style="text-align:center;">
+      <p>${t.text}</p>
+      <p class="rec-sub">${t.sub}</p>
+    </div>
+
+    ${r.nijmegenTotal > 23 ? `
+    <div class="alertbox">
+      Your breathing-symptom score (${r.nijmegenTotal}/64) is above the common screening threshold for hyperventilation-related symptoms. We'd recommend a check-in with a GP or physiotherapist alongside any breathwork practice.
+    </div>` : ''}
+
+    <div class="breakdown">
+      <div class="brow"><span>Breathing symptoms (Nijmegen)</span><span class="bval">${r.nijmegenTotal}/64</span></div>
+      <div class="brow"><span>BOLT score</span><span class="bval">${state.bolt}s</span></div>
+      <div class="brow"><span>Breathing cadence</span><span class="bval">${state.cadence} br/min</span></div>
+      <div class="brow"><span>Sustained exhale</span><span class="bval">${state.exhale}s</span></div>
+      <div class="brow"><span>Nasal breathing level</span><span class="bval">${state.nasal}/4</span></div>
+    </div>
+
+    <div class="exercises">
+      <p class="section-label" style="margin-top:1.9rem;">Recommended for you</p>
+      <h2 class="section-title" style="font-size:1.15rem;">Breathing exercises to try</h2>
+      <p class="section-desc">Based on your results, these are a good place to start. ${r.nijmegenTotal > 23 ? "Given your symptom score above, keep any breath-holding gentle and stop if anything feels uncomfortable." : ""}</p>
+      <div class="exlist">
+        ${EXERCISES[t.n].map(ex => `
+          <div class="exitem">
+            <p class="ex-title">${ex.title}</p>
+            <p class="ex-how"><b>How:</b> ${ex.how}</p>
+            <p class="ex-why"><b>Why:</b> ${ex.why}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="downloadrow">
+      <label for="clientName">Client name (optional, for the file)</label>
+      <input type="text" id="clientName" placeholder="e.g. Sarah Thompson">
+      <div class="btnrow" style="margin-top:0.9rem;">
+        <button class="primary" id="pdfBtn">Download as PDF</button>
+        <button class="ghost" id="downloadBtn">Download as text file</button>
+      </div>
+    </div>
+
+    <div class="navrow" style="justify-content:center; margin-top:1.25rem;">
+      <button class="ghost" id="restart">Start over</button>
+    </div>
+  `;
+  document.getElementById('downloadBtn').addEventListener('click', ()=>downloadResults(r, t));
+  document.getElementById('pdfBtn').addEventListener('click', ()=>printResults());
+  document.getElementById('restart').addEventListener('click', ()=>{
+    state.nijmegen = new Array(16).fill(null);
+    state.bolt = null; state.cadence = null; state.exhale = null; state.nasal = null;
+    goTo(0);
+  });
+}
+
+function safeFileBase(){
+  const nameInput = document.getElementById('clientName').value.trim();
+  const safeName = nameInput ? nameInput.replace(/[^a-z0-9]+/gi,'-').toLowerCase() : 'client';
+  const safeDate = new Date().toISOString().slice(0,10);
+  return `altus-sanctuary-readiness-${safeName}-${safeDate}`;
+}
+
+function printResults(){
+  try{
+    const { jsPDF } = window.jspdf;
+    const r = computeScores();
+    const t = tierFor(r.pct);
+    const nameInput = document.getElementById('clientName').value.trim();
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-AU', {day:'numeric', month:'long', year:'numeric'});
+
+    const doc = new jsPDF({unit:'pt', format:'a4'});
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 48;
+    const maxW = pageW - margin*2;
+    let y = 60;
+
+    function addLine(text, opts={}){
+      const size = opts.size || 11;
+      const gap = opts.gap || 16;
+      const bold = opts.bold || false;
+      const color = opts.color || [30,30,30];
+      doc.setFont('helvetica', bold ? 'bold' : 'normal');
+      doc.setFontSize(size);
+      doc.setTextColor(color[0], color[1], color[2]);
+      const split = doc.splitTextToSize(text, maxW);
+      split.forEach(line=>{
+        if(y > 780){ doc.addPage(); y = 60; }
+        doc.text(line, margin, y);
+        y += gap;
+      });
+    }
+
+    addLine('Altus Sanctuary', {size:20, bold:true, gap:26, color:[74,128,121]});
+    addLine('Breathwork Readiness Results', {size:13, gap:22, color:[100,100,100]});
+    y += 6;
+    if(nameInput) addLine(`Client: ${nameInput}`, {size:11, gap:16});
+    addLine(`Date: ${dateStr}`, {size:11, gap:22});
+
+    addLine(`Overall readiness: ${r.pct}% — ${t.label}`, {size:14, bold:true, gap:20, color:[201,165,103]});
+    addLine(t.text, {size:10.5, gap:14});
+    y += 10;
+
+    addLine('Section breakdown', {size:12, bold:true, gap:18});
+    addLine(`Breathing symptoms (Nijmegen): ${r.nijmegenTotal}/64`, {size:10.5, gap:14});
+    addLine(`BOLT score: ${state.bolt}s`, {size:10.5, gap:14});
+    addLine(`Breathing cadence: ${state.cadence} breaths/min`, {size:10.5, gap:14});
+    addLine(`Sustained exhale: ${state.exhale}s`, {size:10.5, gap:14});
+    addLine(`Nasal breathing level: ${state.nasal}/4`, {size:10.5, gap:14});
+    y += 10;
+
+    if(r.nijmegenTotal > 23){
+      addLine('Breathing-symptom score is above the common screening threshold for hyperventilation-related symptoms. Recommend a check-in with a GP or physiotherapist alongside breathwork.', {size:10, gap:13, color:[180,90,60]});
+      y += 8;
+    }
+
+    addLine('Recommended breathing exercises', {size:12, bold:true, gap:18});
+    EXERCISES[t.n].forEach(ex=>{
+      addLine(ex.title, {size:11, bold:true, gap:14, color:[74,128,121]});
+      addLine(`How: ${ex.how}`, {size:10, gap:13});
+      addLine(`Why: ${ex.why}`, {size:10, gap:13, color:[110,110,110]});
+      y += 6;
+    });
+
+    doc.save(`${safeFileBase()}.pdf`);
+  }catch(e){
+    alert("Couldn't generate the PDF — please try the text file download instead.");
+  }
+}
+
+function downloadResults(r, t){
+  const nameInput = document.getElementById('clientName').value.trim();
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-AU', {day:'numeric', month:'long', year:'numeric'});
+  const timeStr = now.toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'});
+
+  const lines = [];
+  lines.push('ALTUS SANCTUARY — BREATHWORK READINESS RESULTS');
+  lines.push('='.repeat(48));
+  lines.push('');
+  if(nameInput) lines.push(`Client: ${nameInput}`);
+  lines.push(`Date: ${dateStr} at ${timeStr}`);
+  lines.push('');
+  lines.push(`OVERALL READINESS: ${r.pct}% — ${t.label}`);
+  lines.push('');
+  lines.push(t.text);
+  lines.push('');
+  lines.push('-'.repeat(48));
+  lines.push('SECTION BREAKDOWN');
+  lines.push('-'.repeat(48));
+  lines.push(`Breathing symptoms (Nijmegen): ${r.nijmegenTotal}/64`);
+  lines.push(`BOLT score: ${state.bolt}s`);
+  lines.push(`Breathing cadence: ${state.cadence} breaths/min`);
+  lines.push(`Sustained exhale: ${state.exhale}s`);
+  lines.push(`Nasal breathing level: ${state.nasal}/4`);
+  lines.push('');
+  if(r.nijmegenTotal > 23){
+    lines.push('NOTE: Breathing-symptom score is above the common screening');
+    lines.push('threshold for hyperventilation-related symptoms. Recommend a');
+    lines.push('check-in with a GP or physiotherapist alongside breathwork.');
+    lines.push('');
+  }
+  lines.push('-'.repeat(48));
+  lines.push('RECOMMENDED BREATHING EXERCISES');
+  lines.push('-'.repeat(48));
+  EXERCISES[t.n].forEach(ex=>{
+    lines.push('');
+    lines.push(ex.title);
+    lines.push(`How: ${ex.how}`);
+    lines.push(`Why: ${ex.why}`);
+  });
+
+  const blob = new Blob([lines.join('\n')], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${safeFileBase()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+renderProgress();
+render();
+</script>
+</body>
+</html>
