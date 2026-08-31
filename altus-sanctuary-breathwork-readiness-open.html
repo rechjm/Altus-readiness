@@ -906,6 +906,45 @@ function safeFileBase(){
   return `altus-sanctuary-readiness-${safeName}-${safeDate}`;
 }
 
+function explainNijmegen(total){
+  if(total <= 15) return "Minimal breathing-pattern symptoms — your body is showing very few signs of dysfunctional breathing.";
+  if(total <= 23) return "Mild symptoms. Some breathing-related tension or sensitivity is present, but well within a common, manageable range.";
+  if(total <= 35) return "Moderate symptoms — a noticeable cluster of breathing-related symptoms, and a good candidate for foundational, well-paced breathwork.";
+  if(total <= 49) return "Significant symptoms, suggesting a strong pattern of dysfunctional breathing. A gentle, well-supported starting point is recommended, alongside a chat with your GP.";
+  return "A high symptom load. This is worth discussing with a GP or physiotherapist before or alongside any breathwork practice.";
+}
+function explainBolt(s){
+  if(s >= 40) return "An excellent pause, right at or above what's typically seen in very well-conditioned breathers.";
+  if(s >= 31) return "A strong pause, reflecting good CO2 tolerance and calm, efficient breathing.";
+  if(s >= 21) return "An average pause — a reasonable working baseline, with room to grow toward a stronger tolerance.";
+  if(s >= 11) return "A below-average pause. There's room to build CO2 tolerance through consistent, gentle nasal breathing practice.";
+  return "A shorter pause, suggesting your body is currently quite sensitive to CO2 build-up — common in more reactive nervous systems, and a great area to build gently.";
+}
+function explainCadence(b){
+  if(b <= 8) return "A notably slow, efficient breathing rate — often seen in very calm, well-regulated nervous systems.";
+  if(b <= 12) return "A healthy, efficient breathing rate.";
+  if(b <= 16) return "A slightly elevated rate — common, and a good target area for slowing down over time.";
+  if(b <= 20) return "An elevated breathing rate, often linked to stress or habitual over-breathing.";
+  return "A notably fast rate, suggesting the nervous system may be running in a more activated state than needed at rest.";
+}
+function explainExhale(s){
+  if(s >= 45) return "An excellent, highly controlled exhale, reflecting strong respiratory muscle control and calm regulation.";
+  if(s >= 35) return "A strong, well-controlled exhale.";
+  if(s >= 25) return "A solid, controlled exhale, reflecting decent breath control.";
+  if(s >= 15) return "A developing exhale — steady progress will come with consistent practice.";
+  return "A shorter controlled exhale, with plenty of room to build breath control and lung efficiency.";
+}
+function explainNasal(v){
+  const map = {
+    0: "Nasal breathing isn't currently sustainable even at rest — a foundational area to prioritise.",
+    1: "Nasal breathing is comfortable at rest, but activity quickly pushes you into mouth breathing.",
+    2: "You can hold nasal breathing through light activity — a solid, developing base.",
+    3: "Nasal breathing holds up well through moderate activity — a strong sign of good breathing efficiency.",
+    4: "Nasal breathing holds up even during vigorous activity — an excellent, well-conditioned result."
+  };
+  return map[v] || "";
+}
+
 function printResults(){
   try{
     const { jsPDF } = window.jspdf;
@@ -919,26 +958,44 @@ function printResults(){
     const pageW = doc.internal.pageSize.getWidth();
     const margin = 48;
     const maxW = pageW - margin*2;
-    let y = 60;
+
+    // --- Logo mark (mirrors the on-screen SVG: sage/teal/gold peaks + gold sun) ---
+    const logoScale = 0.55;
+    const logoW = 100 * logoScale;
+    const originX = pageW/2 - logoW/2;
+    const originY = 26;
+    function pt(x,y){ return [originX + x*logoScale, originY + y*logoScale]; }
+    doc.setFillColor(201,165,103);
+    doc.circle(...pt(72,24), 9*logoScale, 'F');
+    doc.setFillColor(143,160,132);
+    doc.triangle(...pt(10,78), ...pt(32,38), ...pt(50,66), 'F');
+    doc.setFillColor(74,128,121);
+    doc.triangle(...pt(34,78), ...pt(58,26), ...pt(82,78), 'F');
+    doc.setFillColor(201,165,103);
+    doc.triangle(...pt(60,78), ...pt(80,46), ...pt(96,78), 'F');
+
+    let y = originY + logoW + 22;
 
     function addLine(text, opts={}){
       const size = opts.size || 11;
       const gap = opts.gap || 16;
       const bold = opts.bold || false;
       const color = opts.color || [30,30,30];
+      const align = opts.align || 'left';
       doc.setFont('helvetica', bold ? 'bold' : 'normal');
       doc.setFontSize(size);
       doc.setTextColor(color[0], color[1], color[2]);
       const split = doc.splitTextToSize(text, maxW);
       split.forEach(line=>{
         if(y > 780){ doc.addPage(); y = 60; }
-        doc.text(line, margin, y);
+        const x = align === 'center' ? pageW/2 : margin;
+        doc.text(line, x, y, {align});
         y += gap;
       });
     }
 
-    addLine('Altus Sanctuary', {size:20, bold:true, gap:26, color:[74,128,121]});
-    addLine('Breathwork Readiness Results', {size:13, gap:22, color:[100,100,100]});
+    addLine('Altus Sanctuary', {size:20, bold:true, gap:26, color:[74,128,121], align:'center'});
+    addLine('Breathwork Readiness Results', {size:13, gap:22, color:[100,100,100], align:'center'});
     y += 6;
     if(nameInput) addLine(`Client: ${nameInput}`, {size:11, gap:16});
     addLine(`Date: ${dateStr}`, {size:11, gap:22});
@@ -948,11 +1005,25 @@ function printResults(){
     y += 10;
 
     addLine('Section breakdown', {size:12, bold:true, gap:18});
-    addLine(`Breathing symptoms (Nijmegen): ${r.nijmegenTotal}/64`, {size:10.5, gap:14});
-    addLine(`BOLT score: ${state.bolt}s`, {size:10.5, gap:14});
-    addLine(`Breathing cadence: ${state.cadence} breaths/min`, {size:10.5, gap:14});
-    addLine(`Sustained exhale: ${state.exhale}s`, {size:10.5, gap:14});
-    addLine(`Nasal breathing level: ${state.nasal}/4`, {size:10.5, gap:14});
+
+    addLine(`Breathing symptoms (Nijmegen): ${r.nijmegenTotal}/64`, {size:10.5, bold:true, gap:14});
+    addLine(explainNijmegen(r.nijmegenTotal), {size:9.5, gap:13, color:[90,90,90]});
+    y += 4;
+
+    addLine(`BOLT score: ${state.bolt}s`, {size:10.5, bold:true, gap:14});
+    addLine(explainBolt(state.bolt), {size:9.5, gap:13, color:[90,90,90]});
+    y += 4;
+
+    addLine(`Breathing cadence: ${state.cadence} breaths/min`, {size:10.5, bold:true, gap:14});
+    addLine(explainCadence(state.cadence), {size:9.5, gap:13, color:[90,90,90]});
+    y += 4;
+
+    addLine(`Sustained exhale: ${state.exhale}s`, {size:10.5, bold:true, gap:14});
+    addLine(explainExhale(state.exhale), {size:9.5, gap:13, color:[90,90,90]});
+    y += 4;
+
+    addLine(`Nasal breathing level: ${state.nasal}/4`, {size:10.5, bold:true, gap:14});
+    addLine(explainNasal(state.nasal), {size:9.5, gap:13, color:[90,90,90]});
     y += 10;
 
     if(r.nijmegenTotal > 23){
@@ -995,10 +1066,19 @@ function downloadResults(r, t){
   lines.push('SECTION BREAKDOWN');
   lines.push('-'.repeat(48));
   lines.push(`Breathing symptoms (Nijmegen): ${r.nijmegenTotal}/64`);
+  lines.push(explainNijmegen(r.nijmegenTotal));
+  lines.push('');
   lines.push(`BOLT score: ${state.bolt}s`);
+  lines.push(explainBolt(state.bolt));
+  lines.push('');
   lines.push(`Breathing cadence: ${state.cadence} breaths/min`);
+  lines.push(explainCadence(state.cadence));
+  lines.push('');
   lines.push(`Sustained exhale: ${state.exhale}s`);
+  lines.push(explainExhale(state.exhale));
+  lines.push('');
   lines.push(`Nasal breathing level: ${state.nasal}/4`);
+  lines.push(explainNasal(state.nasal));
   lines.push('');
   if(r.nijmegenTotal > 23){
     lines.push('NOTE: Breathing-symptom score is above the common screening');
