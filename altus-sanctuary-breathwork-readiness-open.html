@@ -395,7 +395,7 @@
   <header class="brand">
     <svg class="mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
       <circle cx="72" cy="24" r="9" fill="#C9A567"/>
-      <polygon points="10,78 32,38 50,66" fill="#8FA084"/>
+      <polygon points="10,78 30,50 50,78" fill="#8FA084"/>
       <polygon points="34,78 58,26 82,78" fill="#4A8079"/>
       <polygon points="60,78 80,46 96,78" fill="#C9A567" opacity="0.9"/>
     </svg>
@@ -959,22 +959,25 @@ function printResults(){
     const margin = 48;
     const maxW = pageW - margin*2;
 
-    // --- Logo mark (mirrors the on-screen SVG: sage/teal/gold peaks + gold sun) ---
+    // --- Logo mark (mirrors the on-screen SVG: sage/teal/gold peaks + gold sun, on black) ---
     const logoScale = 0.55;
     const logoW = 100 * logoScale;
     const originX = pageW/2 - logoW/2;
     const originY = 26;
+    const pad = 10;
+    doc.setFillColor(0,0,0);
+    doc.roundedRect(originX - pad, originY - pad, logoW + pad*2, logoW + pad*2, 6, 6, 'F');
     function pt(x,y){ return [originX + x*logoScale, originY + y*logoScale]; }
     doc.setFillColor(201,165,103);
     doc.circle(...pt(72,24), 9*logoScale, 'F');
     doc.setFillColor(143,160,132);
-    doc.triangle(...pt(10,78), ...pt(32,38), ...pt(50,66), 'F');
+    doc.triangle(...pt(10,78), ...pt(30,50), ...pt(50,78), 'F');
     doc.setFillColor(74,128,121);
     doc.triangle(...pt(34,78), ...pt(58,26), ...pt(82,78), 'F');
     doc.setFillColor(201,165,103);
     doc.triangle(...pt(60,78), ...pt(80,46), ...pt(96,78), 'F');
 
-    let y = originY + logoW + 22;
+    let y = originY + logoW + pad + 22;
 
     function addLine(text, opts={}){
       const size = opts.size || 11;
