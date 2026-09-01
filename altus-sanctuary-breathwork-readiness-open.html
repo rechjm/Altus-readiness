@@ -334,6 +334,13 @@
     border-radius: 10px;
     padding: 0.95rem 1.1rem;
   }
+  .ex-focus{
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--sage);
+    margin: 0 0 0.35rem;
+  }
   .ex-title{
     font-family:'Fraunces', serif;
     font-size: 1.02rem;
@@ -789,23 +796,61 @@ function computeScores(){
   return {nijmegenTotal, sNijmegen, sBolt, sCadence, sExhale, sNasal, sum, pct};
 }
 
-const EXERCISES = {
-  1: [
-    { title:"Extended-exhale breathing", how:"Inhale gently through the nose for 4 counts, exhale slowly through the nose for 6–8 counts. Repeat for 2–3 minutes.", why:"Lengthening the exhale activates the parasympathetic (rest-and-digest) response — a gentle, safe starting point for a more reactive nervous system." },
-    { title:"Physiological sigh", how:"Take a normal inhale through the nose, then a short second sip of air on top, followed by a long, slow exhale through the mouth. Repeat 3–5 times.", why:"A quick, well-tolerated way to lower activation in the moment without any breath-holding." },
-    { title:"Simple nasal breathing practice", how:"Spend 5–10 minutes breathing only through the nose at rest, keeping breaths small and quiet.", why:"Builds tolerance and comfort with nasal breathing before layering in more structured techniques." }
-  ],
-  2: [
-    { title:"Box breathing", how:"Inhale for 4, hold for 4, exhale for 4, hold for 4. Repeat for 4–5 rounds.", why:"A structured, even rhythm that builds breath control and steadies the nervous system." },
-    { title:"Coherent breathing", how:"Inhale for 5 counts, exhale for 5 counts, with no pause. Continue for 5 minutes.", why:"This roughly 6-breaths-per-minute pace is associated with balanced heart-rate variability and calm alertness." },
-    { title:"Extended exhale with a light hold", how:"Inhale for 4, exhale for 6, then hold gently at the bottom for 2 before the next inhale.", why:"Builds on your existing exhale control and introduces a small, manageable pause." }
-  ],
-  3: [
-    { title:"4-7-8 breathing", how:"Inhale through the nose for 4, hold for 7, exhale slowly through the mouth for 8. Repeat for 4 rounds.", why:"A longer hold and exhale that suits a nervous system with good existing CO2 tolerance." },
-    { title:"Alternate nostril breathing", how:"Using your thumb and finger to close one nostril at a time, inhale through one side, switch, and exhale through the other. Continue, alternating, for 5 minutes.", why:"Supports balance and focus, and is well suited to those with strong nasal breathing capacity already." },
-    { title:"CO2 tolerance table (guided)", how:"A structured sequence of breath holds with short recovery breathing between rounds — best learned with guidance in a session before practising solo.", why:"Builds on strong existing BOLT scores to further extend comfortable CO2 tolerance." }
-  ]
+const EXERCISES_BY_SECTION = {
+  nijmegen: {
+    label: "Breathing symptoms",
+    weak:   { title:"Extended-exhale downregulation", how:"Inhale gently through the nose for 4 counts, exhale slowly through the nose for 6–8 counts. Repeat for 2–3 minutes, several times a day.", why:"Lengthening the exhale calms the nervous system and directly eases hyperventilation-type symptoms." },
+    mid:    { title:"Coherent breathing", how:"Inhale for 5 counts, exhale for 5 counts, with no pause. Continue for 5 minutes daily.", why:"A steady, balanced rhythm that keeps residual symptom sensitivity settling over time." },
+    strong: { title:"Maintenance nasal breathing", how:"Spend a few quiet minutes each day simply breathing through the nose at rest, noticing the breath.", why:"With symptoms well-controlled, this keeps your baseline steady rather than building anything new." }
+  },
+  bolt: {
+    label: "BOLT score",
+    weak:   { title:"Gentle CO2 tolerance builder", how:"After a normal exhale, pause comfortably for a few seconds before your next breath — never forcing or straining. Repeat 5–6 times.", why:"Builds CO2 tolerance gradually and safely, without pushing past what feels manageable." },
+    mid:    { title:"Box breathing", how:"Inhale for 4, hold for 4, exhale for 4, hold for 4. Repeat for 4–5 rounds.", why:"A structured rhythm that steadily extends comfortable breath-holding capacity." },
+    strong: { title:"Guided CO2 tolerance table", how:"A structured sequence of longer breath holds with short recovery breathing between rounds — best learned with guidance in a session.", why:"Builds on an already strong BOLT score to extend tolerance further." }
+  },
+  cadence: {
+    label: "Breathing cadence",
+    weak:   { title:"Slow-down pacing practice", how:"A few times a day, deliberately slow your breathing to about 4 seconds in, 6 seconds out, for 2 minutes.", why:"Directly retrains a faster resting rate toward a calmer, more efficient pace." },
+    mid:    { title:"Coherent breathing (5–5)", how:"Inhale for 5 counts, exhale for 5 counts, continuing for 5 minutes.", why:"Nudges your rate toward the efficient ~6-breaths-a-minute range associated with calm alertness." },
+    strong: { title:"Maintenance slow breathing", how:"A few minutes of easy, unhurried nasal breathing daily — no counting needed.", why:"Your resting rate is already efficient; this simply keeps it that way." }
+  },
+  exhale: {
+    label: "Sustained exhale",
+    weak:   { title:"Sustained exhale builder", how:"Once or twice a day, take a full inhale then the slowest, smoothest exhale you can manage, gently extending the time over several weeks.", why:"Gradually builds respiratory muscle control and lung efficiency." },
+    mid:    { title:"4–6 count exhale practice", how:"Inhale for 4 counts, exhale for 6, repeating for 2–3 minutes.", why:"A manageable step up in exhale control, building on a decent existing base." },
+    strong: { title:"4-7-8 breathing", how:"Inhale through the nose for 4, hold for 7, exhale slowly through the mouth for 8. Repeat for 4 rounds.", why:"A more advanced pattern well suited to strong existing exhale control." }
+  },
+  nasal: {
+    label: "Nasal breathing",
+    weak:   { title:"Nasal breathing at rest", how:"Set aside a few minutes, several times a day, to breathe only through the nose while sitting quietly.", why:"Builds comfort and capacity with nasal breathing from the calmest possible starting point." },
+    mid:    { title:"Nasal breathing on the move", how:"Practice keeping nasal-only breathing during a light walk, slowing your pace any time you feel the urge to open your mouth.", why:"Extends your nasal breathing capacity into gentle activity." },
+    strong: { title:"Nasal breathing under exertion", how:"Deliberately maintain nasal-only breathing during moderate exercise, slowing pace rather than switching to mouth breathing.", why:"Pushes an already strong capacity further, improving efficiency under exertion." }
+  }
 };
+
+function bandTier(band){
+  if(band <= 1) return 'weak';
+  if(band === 2) return 'mid';
+  return 'strong';
+}
+
+function personalizedExercises(r){
+  const sections = [
+    {key:'nijmegen', band:r.sNijmegen},
+    {key:'bolt',     band:r.sBolt},
+    {key:'cadence',  band:r.sCadence},
+    {key:'exhale',   band:r.sExhale},
+    {key:'nasal',    band:r.sNasal}
+  ];
+  // Weakest first; ties keep original test order (stable sort)
+  const weakest = [...sections].sort((a,b)=>a.band-b.band).slice(0,3);
+  return weakest.map(s=>{
+    const data = EXERCISES_BY_SECTION[s.key];
+    const ex = data[bandTier(s.band)];
+    return { focus: data.label, ...ex };
+  });
+}
 
 function tierFor(pct){
   if(pct < 34) return {n:1, cls:'tier-1', label:'Foundations first',
@@ -865,10 +910,11 @@ function renderResults(){
     <div class="exercises">
       <p class="section-label" style="margin-top:1.9rem;">Recommended for you</p>
       <h2 class="section-title" style="font-size:1.15rem;">Breathing exercises to try</h2>
-      <p class="section-desc">Based on your results, these are a good place to start. ${r.nijmegenTotal > 23 ? "Given your symptom score above, keep any breath-holding gentle and stop if anything feels uncomfortable." : ""}</p>
+      <p class="section-desc">Chosen based on your weakest-scoring areas from today's tests. ${r.nijmegenTotal > 23 ? "Given your symptom score above, keep any breath-holding gentle and stop if anything feels uncomfortable." : ""}</p>
       <div class="exlist">
-        ${EXERCISES[t.n].map(ex => `
+        ${personalizedExercises(r).map(ex => `
           <div class="exitem">
+            <p class="ex-focus">Focus area: ${ex.focus}</p>
             <p class="ex-title">${ex.title}</p>
             <p class="ex-how"><b>How:</b> ${ex.how}</p>
             <p class="ex-why"><b>Why:</b> ${ex.why}</p>
@@ -1035,7 +1081,9 @@ function printResults(){
     }
 
     addLine('Recommended breathing exercises', {size:12, bold:true, gap:18});
-    EXERCISES[t.n].forEach(ex=>{
+    addLine('Chosen based on your weakest-scoring areas from today\'s tests.', {size:9.5, gap:14, color:[110,110,110]});
+    personalizedExercises(r).forEach(ex=>{
+      addLine(`FOCUS AREA: ${ex.focus.toUpperCase()}`, {size:8.5, bold:true, gap:12, color:[143,160,132]});
       addLine(ex.title, {size:11, bold:true, gap:14, color:[74,128,121]});
       addLine(`How: ${ex.how}`, {size:10, gap:13});
       addLine(`Why: ${ex.why}`, {size:10, gap:13, color:[110,110,110]});
@@ -1091,9 +1139,11 @@ function downloadResults(r, t){
   }
   lines.push('-'.repeat(48));
   lines.push('RECOMMENDED BREATHING EXERCISES');
+  lines.push('(chosen based on your weakest-scoring areas from today\'s tests)');
   lines.push('-'.repeat(48));
-  EXERCISES[t.n].forEach(ex=>{
+  personalizedExercises(r).forEach(ex=>{
     lines.push('');
+    lines.push(`Focus area: ${ex.focus}`);
     lines.push(ex.title);
     lines.push(`How: ${ex.how}`);
     lines.push(`Why: ${ex.why}`);
