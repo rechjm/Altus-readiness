@@ -303,14 +303,23 @@
     border-top: 1px solid var(--line);
     padding-top: 1.25rem;
   }
-  .brow{
-    display:flex; justify-content:space-between; align-items:center;
-    font-size: 0.85rem;
-    padding: 0.55rem 0;
+  .bitem{
+    padding: 0.9rem 0;
     border-bottom: 1px solid var(--line);
   }
-  .brow:last-child{border-bottom:none;}
+  .brow{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
   .brow .bval{color: var(--gold); font-family:'Fraunces', serif;}
+  .bexplain{
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0.55rem 0 0;
+    line-height: 1.55;
+  }
+  .bexplain b{color: var(--sage); font-weight:500;}
 
   .alertbox{
     background: rgba(201,127,103,0.1);
@@ -606,7 +615,7 @@ function renderExhale(){
   const card = document.getElementById('cardArea');
   card.innerHTML = `
     <p class="section-label">Section 4 of 5</p>
-    <h2 class="section-title">Sustained exhale</h2>
+    <h2 class="section-title">Lung Capacity Test</h2>
     <p class="section-desc">Take a full breath in, then exhale slowly and continuously for as long as you comfortably can. Time the exhale from start to finish.</p>
     <div class="stopwatch">
       <div class="timeread" id="tread">0.0s</div>
@@ -642,11 +651,11 @@ function renderExhale(){
 
 /* ---------------- Section 5: Nasal breathing ---------------- */
 const NASAL_OPTIONS = [
-  {v:0, t:"Cannot maintain nasal breathing at rest"},
+  {v:0, t:"Unable to maintain nasal breathing even at rest"},
   {v:1, t:"Nasal breathing at rest only"},
-  {v:2, t:"Nasal breathing during light activity"},
-  {v:3, t:"Nasal breathing during moderate activity"},
-  {v:4, t:"Nasal breathing during vigorous activity"}
+  {v:2, t:"Nasal breathing during rest and light activity"},
+  {v:3, t:"Nasal breathing during rest, light, and moderate activity"},
+  {v:4, t:"Nasal breathing maintained even during strenuous exercise"}
 ];
 function renderNasal(){
   const card = document.getElementById('cardArea');
@@ -756,32 +765,37 @@ function buildCountdown(totalSecs){
 
 /* ---------------- Scoring ---------------- */
 function bandNijmegen(total){
-  if(total <= 15) return 4;
-  if(total <= 23) return 3;
-  if(total <= 35) return 2;
-  if(total <= 49) return 1;
+  // Official tiers from the client screening form: 0–22 / 23–32 / 33–64
+  if(total <= 22) return 4;
+  if(total <= 32) return 2;
   return 0;
 }
 function bandBolt(s){
+  // Official tiers: <10 / 10–20 / 20–30 / 30–40 / 40+
   if(s >= 40) return 4;
-  if(s >= 31) return 3;
-  if(s >= 21) return 2;
-  if(s >= 11) return 1;
+  if(s >= 30) return 3;
+  if(s >= 20) return 2;
+  if(s >= 10) return 1;
   return 0;
 }
 function bandCadence(b){
-  if(b <= 8) return 4;
-  if(b <= 12) return 3;
+  // Official framework: 8–12 optimal, ≤12 functionally acceptable, >12 over-breathing (graded)
+  if(b >= 8 && b <= 12) return 4;
+  if(b < 8) return 3;
   if(b <= 16) return 2;
   if(b <= 20) return 1;
   return 0;
 }
+function capacityLevel(s){
+  // Official Lung Capacity Test levels: 1–5 based on timed nasal exhale
+  if(s > 75) return 5;
+  if(s >= 60) return 4;
+  if(s >= 45) return 3;
+  if(s >= 30) return 2;
+  return 1;
+}
 function bandExhale(s){
-  if(s >= 45) return 4;
-  if(s >= 35) return 3;
-  if(s >= 25) return 2;
-  if(s >= 15) return 1;
-  return 0;
+  return capacityLevel(s) - 1; // convert official 1–5 level to internal 0–4 scale
 }
 
 function computeScores(){
@@ -894,23 +908,38 @@ function renderResults(){
       <p class="rec-sub">${t.sub}</p>
     </div>
 
-    ${r.nijmegenTotal > 23 ? `
+    ${r.nijmegenTotal >= 33 ? `
     <div class="alertbox">
-      Your breathing-symptom score (${r.nijmegenTotal}/64) is above the common screening threshold for hyperventilation-related symptoms. We'd recommend a check-in with a GP or physiotherapist alongside any breathwork practice.
+      Your breathing-symptom score (${r.nijmegenTotal}/64) reflects significant dysfunctional / hyperventilation-related breathing patterns. Foundational retraining and regulation are strongly recommended, and if you have any underlying health conditions, a check-in with a GP or physiotherapist alongside your practice is worthwhile.
     </div>` : ''}
 
     <div class="breakdown">
-      <div class="brow"><span>Breathing symptoms (Nijmegen)</span><span class="bval">${r.nijmegenTotal}/64</span></div>
-      <div class="brow"><span>BOLT score</span><span class="bval">${state.bolt}s</span></div>
-      <div class="brow"><span>Breathing cadence</span><span class="bval">${state.cadence} br/min</span></div>
-      <div class="brow"><span>Sustained exhale</span><span class="bval">${state.exhale}s</span></div>
-      <div class="brow"><span>Nasal breathing level</span><span class="bval">${state.nasal}/4</span></div>
+      <div class="bitem">
+        <div class="brow"><span>Breathing symptoms (Nijmegen)</span><span class="bval">${r.nijmegenTotal}/64</span></div>
+        <p class="bexplain"><b>${explainNijmegen(r.nijmegenTotal).label}.</b> ${explainNijmegen(r.nijmegenTotal).text}</p>
+      </div>
+      <div class="bitem">
+        <div class="brow"><span>BOLT score</span><span class="bval">${state.bolt}s</span></div>
+        <p class="bexplain"><b>${explainBolt(state.bolt).label}.</b> ${explainBolt(state.bolt).text}</p>
+      </div>
+      <div class="bitem">
+        <div class="brow"><span>Breathing cadence</span><span class="bval">${state.cadence} br/min</span></div>
+        <p class="bexplain"><b>${explainCadence(state.cadence).label}.</b> ${explainCadence(state.cadence).text}</p>
+      </div>
+      <div class="bitem">
+        <div class="brow"><span>Sustained exhale (Lung Capacity Test)</span><span class="bval">${state.exhale}s · Level ${capacityLevel(state.exhale)}/5</span></div>
+        <p class="bexplain"><b>${explainExhale(state.exhale).label}.</b> ${explainExhale(state.exhale).text}</p>
+      </div>
+      <div class="bitem" style="border-bottom:none;">
+        <div class="brow"><span>Nasal breathing level</span><span class="bval">${state.nasal}/4</span></div>
+        <p class="bexplain"><b>${explainNasal(state.nasal).label}.</b> ${explainNasal(state.nasal).text}</p>
+      </div>
     </div>
 
     <div class="exercises">
       <p class="section-label" style="margin-top:1.9rem;">Recommended for you</p>
       <h2 class="section-title" style="font-size:1.15rem;">Breathing exercises to try</h2>
-      <p class="section-desc">Chosen based on your weakest-scoring areas from today's tests. ${r.nijmegenTotal > 23 ? "Given your symptom score above, keep any breath-holding gentle and stop if anything feels uncomfortable." : ""}</p>
+      <p class="section-desc">Chosen based on your weakest-scoring areas from today's tests. ${r.nijmegenTotal >= 33 ? "Given your symptom score above, keep any breath-holding gentle and stop if anything feels uncomfortable." : ""}</p>
       <div class="exlist">
         ${personalizedExercises(r).map(ex => `
           <div class="exitem">
@@ -953,42 +982,43 @@ function safeFileBase(){
 }
 
 function explainNijmegen(total){
-  if(total <= 15) return "Minimal breathing-pattern symptoms — your body is showing very few signs of dysfunctional breathing.";
-  if(total <= 23) return "Mild symptoms. Some breathing-related tension or sensitivity is present, but well within a common, manageable range.";
-  if(total <= 35) return "Moderate symptoms — a noticeable cluster of breathing-related symptoms, and a good candidate for foundational, well-paced breathwork.";
-  if(total <= 49) return "Significant symptoms, suggesting a strong pattern of dysfunctional breathing. A gentle, well-supported starting point is recommended, alongside a chat with your GP.";
-  return "A high symptom load. This is worth discussing with a GP or physiotherapist before or alongside any breathwork practice.";
+  if(total <= 22) return { label:"Low likelihood of dysfunctional breathing", text:"Breathing patterns are generally functional, with a minimal symptom load." };
+  if(total <= 32) return { label:"Mild to moderate dysfunctional breathing likely", text:"This indicates emerging or situational over-breathing patterns. Breathing retraining is usually beneficial at this stage." };
+  return { label:"Significant dysfunctional / hyperventilation-related breathing patterns", text:"This reflects a high symptom load, commonly associated with chronic over-breathing and nervous system dysregulation. Foundational retraining and regulation are strongly recommended." };
 }
 function explainBolt(s){
-  if(s >= 40) return "An excellent pause, right at or above what's typically seen in very well-conditioned breathers.";
-  if(s >= 31) return "A strong pause, reflecting good CO2 tolerance and calm, efficient breathing.";
-  if(s >= 21) return "An average pause — a reasonable working baseline, with room to grow toward a stronger tolerance.";
-  if(s >= 11) return "A below-average pause. There's room to build CO2 tolerance through consistent, gentle nasal breathing practice.";
-  return "A shorter pause, suggesting your body is currently quite sensitive to CO2 build-up — common in more reactive nervous systems, and a great area to build gently.";
+  if(s >= 40) return { label:"Very good tolerance", text:"This reflects strong breathing efficiency." };
+  if(s >= 30) return { label:"Good tolerance", text:"This reflects stable breathing function." };
+  if(s >= 20) return { label:"Functional range", text:"Breathing is improving and sits within a functional range." };
+  if(s >= 10) return { label:"Reduced tolerance", text:"Breathing retraining is strongly recommended at this level." };
+  return { label:"Very low CO2 tolerance", text:"Breathing is highly inefficient at rest at this level." };
 }
 function explainCadence(b){
-  if(b <= 8) return "A notably slow, efficient breathing rate — often seen in very calm, well-regulated nervous systems.";
-  if(b <= 12) return "A healthy, efficient breathing rate.";
-  if(b <= 16) return "A slightly elevated rate — common, and a good target area for slowing down over time.";
-  if(b <= 20) return "An elevated breathing rate, often linked to stress or habitual over-breathing.";
-  return "A notably fast rate, suggesting the nervous system may be running in a more activated state than needed at rest.";
+  if(b >= 8 && b <= 12) return { label:"Optimal resting breathing range", text:"This sits right in the optimal resting breathing range." };
+  if(b < 8) return { label:"Functionally acceptable", text:"This sits below the 8–12 breaths/min optimal range but remains functionally acceptable." };
+  const over = b - 12;
+  return { label:"Over-breathing at rest", text:`This is ${over} breath${over===1?'':'s'} per minute above the 12 breaths/min threshold. The higher this sits above 12, the greater the degree of over-breathing.` };
 }
 function explainExhale(s){
-  if(s >= 45) return "An excellent, highly controlled exhale, reflecting strong respiratory muscle control and calm regulation.";
-  if(s >= 35) return "A strong, well-controlled exhale.";
-  if(s >= 25) return "A solid, controlled exhale, reflecting decent breath control.";
-  if(s >= 15) return "A developing exhale — steady progress will come with consistent practice.";
-  return "A shorter controlled exhale, with plenty of room to build breath control and lung efficiency.";
+  const lvl = capacityLevel(s);
+  const map = {
+    1: { label:"Very limited functional capacity", levelText:"Level 1" },
+    2: { label:"Reduced capacity; tolerance still developing", levelText:"Level 2" },
+    3: { label:"Functional lung capacity", levelText:"Level 3" },
+    4: { label:"Strong capacity and breath control", levelText:"Level 4" },
+    5: { label:"Very strong functional capacity", levelText:"Level 5" }
+  };
+  return { label: map[lvl].label, text: `${map[lvl].levelText} of 5, based on a ${s}-second timed nasal exhale.`, level: lvl };
 }
 function explainNasal(v){
   const map = {
-    0: "Nasal breathing isn't currently sustainable even at rest — a foundational area to prioritise.",
-    1: "Nasal breathing is comfortable at rest, but activity quickly pushes you into mouth breathing.",
-    2: "You can hold nasal breathing through light activity — a solid, developing base.",
-    3: "Nasal breathing holds up well through moderate activity — a strong sign of good breathing efficiency.",
-    4: "Nasal breathing holds up even during vigorous activity — an excellent, well-conditioned result."
+    0: { label:"Unable to maintain nasal breathing even at rest", text:"A foundational area to prioritise before layering in more advanced breathwork." },
+    1: { label:"Nasal breathing at rest only", text:"Comfortable at rest, but activity quickly pushes you into mouth breathing." },
+    2: { label:"Nasal breathing during rest and light activity", text:"A solid, developing base that holds through rest and light activity." },
+    3: { label:"Nasal breathing during rest, light, and moderate activity", text:"A strong sign of good breathing efficiency, holding through moderate activity." },
+    4: { label:"Nasal breathing maintained even during strenuous exercise", text:"An excellent, well-conditioned result." }
   };
-  return map[v] || "";
+  return map[v] || { label:"", text:"" };
 }
 
 function printResults(){
@@ -1055,28 +1085,38 @@ function printResults(){
 
     addLine('Section breakdown', {size:12, bold:true, gap:18});
 
+    const nj = explainNijmegen(r.nijmegenTotal);
     addLine(`Breathing symptoms (Nijmegen): ${r.nijmegenTotal}/64`, {size:10.5, bold:true, gap:14});
-    addLine(explainNijmegen(r.nijmegenTotal), {size:9.5, gap:13, color:[90,90,90]});
+    addLine(`${nj.label}.`, {size:9.5, bold:true, gap:13, color:[143,160,132]});
+    addLine(nj.text, {size:9.5, gap:13, color:[90,90,90]});
     y += 4;
 
+    const bo = explainBolt(state.bolt);
     addLine(`BOLT score: ${state.bolt}s`, {size:10.5, bold:true, gap:14});
-    addLine(explainBolt(state.bolt), {size:9.5, gap:13, color:[90,90,90]});
+    addLine(`${bo.label}.`, {size:9.5, bold:true, gap:13, color:[143,160,132]});
+    addLine(bo.text, {size:9.5, gap:13, color:[90,90,90]});
     y += 4;
 
+    const ca = explainCadence(state.cadence);
     addLine(`Breathing cadence: ${state.cadence} breaths/min`, {size:10.5, bold:true, gap:14});
-    addLine(explainCadence(state.cadence), {size:9.5, gap:13, color:[90,90,90]});
+    addLine(`${ca.label}.`, {size:9.5, bold:true, gap:13, color:[143,160,132]});
+    addLine(ca.text, {size:9.5, gap:13, color:[90,90,90]});
     y += 4;
 
-    addLine(`Sustained exhale: ${state.exhale}s`, {size:10.5, bold:true, gap:14});
-    addLine(explainExhale(state.exhale), {size:9.5, gap:13, color:[90,90,90]});
+    const ex = explainExhale(state.exhale);
+    addLine(`Sustained exhale (Lung Capacity Test): ${state.exhale}s · Level ${capacityLevel(state.exhale)}/5`, {size:10.5, bold:true, gap:14});
+    addLine(`${ex.label}.`, {size:9.5, bold:true, gap:13, color:[143,160,132]});
+    addLine(ex.text, {size:9.5, gap:13, color:[90,90,90]});
     y += 4;
 
+    const na = explainNasal(state.nasal);
     addLine(`Nasal breathing level: ${state.nasal}/4`, {size:10.5, bold:true, gap:14});
-    addLine(explainNasal(state.nasal), {size:9.5, gap:13, color:[90,90,90]});
+    addLine(`${na.label}.`, {size:9.5, bold:true, gap:13, color:[143,160,132]});
+    addLine(na.text, {size:9.5, gap:13, color:[90,90,90]});
     y += 10;
 
-    if(r.nijmegenTotal > 23){
-      addLine('Breathing-symptom score is above the common screening threshold for hyperventilation-related symptoms. Recommend a check-in with a GP or physiotherapist alongside breathwork.', {size:10, gap:13, color:[180,90,60]});
+    if(r.nijmegenTotal >= 33){
+      addLine('Breathing-symptom score reflects significant dysfunctional / hyperventilation-related breathing patterns. Foundational retraining and regulation are strongly recommended, alongside a check-in with a GP or physiotherapist if any underlying health conditions are present.', {size:10, gap:13, color:[180,90,60]});
       y += 8;
     }
 
@@ -1116,25 +1156,37 @@ function downloadResults(r, t){
   lines.push('-'.repeat(48));
   lines.push('SECTION BREAKDOWN');
   lines.push('-'.repeat(48));
+  const njT = explainNijmegen(r.nijmegenTotal);
   lines.push(`Breathing symptoms (Nijmegen): ${r.nijmegenTotal}/64`);
-  lines.push(explainNijmegen(r.nijmegenTotal));
+  lines.push(`${njT.label}.`);
+  lines.push(njT.text);
   lines.push('');
+  const boT = explainBolt(state.bolt);
   lines.push(`BOLT score: ${state.bolt}s`);
-  lines.push(explainBolt(state.bolt));
+  lines.push(`${boT.label}.`);
+  lines.push(boT.text);
   lines.push('');
+  const caT = explainCadence(state.cadence);
   lines.push(`Breathing cadence: ${state.cadence} breaths/min`);
-  lines.push(explainCadence(state.cadence));
+  lines.push(`${caT.label}.`);
+  lines.push(caT.text);
   lines.push('');
-  lines.push(`Sustained exhale: ${state.exhale}s`);
-  lines.push(explainExhale(state.exhale));
+  const exT = explainExhale(state.exhale);
+  lines.push(`Sustained exhale (Lung Capacity Test): ${state.exhale}s · Level ${capacityLevel(state.exhale)}/5`);
+  lines.push(`${exT.label}.`);
+  lines.push(exT.text);
   lines.push('');
+  const naT = explainNasal(state.nasal);
   lines.push(`Nasal breathing level: ${state.nasal}/4`);
-  lines.push(explainNasal(state.nasal));
+  lines.push(`${naT.label}.`);
+  lines.push(naT.text);
   lines.push('');
-  if(r.nijmegenTotal > 23){
-    lines.push('NOTE: Breathing-symptom score is above the common screening');
-    lines.push('threshold for hyperventilation-related symptoms. Recommend a');
-    lines.push('check-in with a GP or physiotherapist alongside breathwork.');
+  if(r.nijmegenTotal >= 33){
+    lines.push('NOTE: Breathing-symptom score reflects significant dysfunctional');
+    lines.push('/ hyperventilation-related breathing patterns. Foundational');
+    lines.push('retraining and regulation are strongly recommended, alongside a');
+    lines.push('check-in with a GP or physiotherapist if any underlying health');
+    lines.push('conditions are present.');
     lines.push('');
   }
   lines.push('-'.repeat(48));
