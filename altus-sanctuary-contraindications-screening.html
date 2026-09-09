@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Altus Sanctuary — Breathwork Contraindications Screening</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --bg: #1E3A38;
+    --surface: #234544;
+    --surface-2: #2A504E;
+    --sage: #8FA084;
+    --sage-dim: #5F7259;
+    --teal: #4A8079;
+    --gold: #C9A567;
+    --gold-dim: #9C8253;
+    --cream: #F3EFE5;
+    --muted: #9BAB94;
+    --line: rgba(243,239,229,0.12);
+    --danger: #C97F67;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Work Sans', sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap{
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+  header.brand{
+    text-align:center;
+    margin: -2.5rem -1.5rem 2.5rem;
+    padding: 2.5rem 1.5rem 2rem;
+    background: #000;
+  }
+  .mark{width:64px; height:64px; margin:0 auto 0.75rem;}
+  header.brand h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: 2rem;
+    letter-spacing: 0.015em;
+    color: #FFFDF8;
+    margin: 0 0 0.5rem;
+  }
+  header.brand p.tagline{
+    margin:0;
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  header.brand p.sub{
+    margin: 0.9rem auto 0;
+    max-width: 460px;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.75rem 1.5rem;
+  }
+  .section-label{
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin: 0 0 0.4rem;
+  }
+  h2.section-title{
+    font-family:'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.35rem;
+    margin: 0 0 0.6rem;
+  }
+  p.section-desc{
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin: 0 0 1.4rem;
+  }
+
+  .gate-field{margin-bottom: 1.1rem;}
+  .gate-field label{display:block; font-size:0.82rem; color: var(--muted); margin-bottom:0.4rem;}
+  .gate-field input{
+    width:100%;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--cream);
+    font-family:'Work Sans', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.7rem 0.85rem;
+  }
+  .gate-field input:focus{outline: 1.5px solid var(--gold); border-color: var(--gold);}
+
+  .qitem{
+    padding: 1.1rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .qitem:first-child{border-top:none; padding-top:0;}
+  .qitem p.q{
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+  }
+  .yn{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .yn button{
+    font-family:'Work Sans', sans-serif;
+    font-weight:500;
+    font-size: 0.85rem;
+    padding: 0.65rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .yn button:hover{border-color: var(--sage-dim);}
+  .yn button.sel-no{
+    background: var(--sage);
+    border-color: var(--sage);
+    color: #16201B;
+  }
+  .yn button.sel-yes{
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #241512;
+  }
+
+  button.primary{
+    font-family:'Work Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.92rem;
+    background: var(--sage);
+    color: #16201B;
+    border: none;
+    border-radius: 999px;
+    padding: 0.75rem 1.7rem;
+    cursor: pointer;
+    transition: transform .12s ease, background .2s ease;
+  }
+  button.primary:hover{background:#9DAF92;}
+  button.primary:active{transform: scale(0.97);}
+
+  button.ghost{
+    font-family:'Work Sans', sans-serif;
+    font-size: 0.88rem;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.7rem 1.5rem;
+    cursor:pointer;
+  }
+  button.ghost:hover{border-color: var(--sage-dim); color: var(--cream);}
+
+  .btnrow{
+    display:flex;
+    justify-content:center;
+    gap: 0.75rem;
+    flex-wrap:wrap;
+  }
+  .navrow{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top: 2rem;
+  }
+  .error{
+    color: var(--danger);
+    font-size: 0.8rem;
+    text-align:center;
+    margin-top: 0.5rem;
+    min-height: 1em;
+  }
+
+  .resultbadge{
+    display:inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform:uppercase;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  .clear{background: rgba(143,160,132,0.16); color: var(--sage);}
+  .flagged{background: rgba(201,127,103,0.16); color:#E3A48F;}
+
+  .alertbox{
+    background: rgba(201,127,103,0.1);
+    border: 1px solid rgba(201,127,103,0.35);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    font-size: 0.88rem;
+    color: #E3A48F;
+    margin: 1.25rem 0;
+    line-height: 1.55;
+  }
+
+  .flaglist{
+    margin: 1.5rem 0;
+    border-top: 1px solid var(--line);
+    padding-top: 1.1rem;
+  }
+  .flagrow{
+    font-size: 0.88rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--cream);
+  }
+  .flagrow:last-child{border-bottom:none;}
+
+  .downloadrow{
+    margin-top: 1.9rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.5rem;
+    text-align:center;
+  }
+  .downloadrow label{
+    display:block;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .downloadrow input{
+    width:100%;
+    max-width: 320px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--cream);
+    font-family:'Work Sans', sans-serif;
+    font-size: 0.92rem;
+    padding: 0.65rem 0.85rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="brand">
+    <svg class="mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="72" cy="24" r="9" fill="#C9A567"/>
+      <polygon points="10,78 30,50 50,78" fill="#8FA084"/>
+      <polygon points="34,78 58,26 82,78" fill="#4A8079"/>
+      <polygon points="60,78 80,46 96,78" fill="#C9A567" opacity="0.9"/>
+    </svg>
+    <h1>Altus Sanctuary</h1>
+    <p class="tagline">Breath · Mind · Nourishment</p>
+    <p class="sub">Contraindications & safety screening — hyperventilation breathwork practices come with specific contraindications that may render them unsuitable or unsafe for certain individuals.</p>
+  </header>
+
+  <div class="card" id="cardArea"></div>
+
+</div>
+
+<script>
+const QUESTIONS = [
+  "Do you have any diagnosed cardiovascular conditions (e.g., heart disease, arrhythmia, or uncontrolled high blood pressure)?",
+  "Have you ever experienced a heart attack, stroke, or any other serious cardiovascular event?",
+  "Do you suffer from any respiratory conditions, such as asthma, chronic obstructive pulmonary disease (COPD), or other chronic lung issues?",
+  "Have you ever been diagnosed with epilepsy or any other seizure disorders?",
+  "Are you currently pregnant or do you suspect that you might be pregnant?",
+  "Have you had any recent surgeries, injuries, or significant trauma (especially within the past 6 months) that might be affected by intense breathing exercises?",
+  "Do you have a history of fainting, dizziness, or loss of consciousness — particularly during periods of rapid or deep breathing?",
+  "Are you currently taking any medications or substances (e.g., sedatives, beta-blockers) that could affect your respiratory or cardiovascular function?",
+  "Have you been diagnosed with any psychiatric conditions (such as severe anxiety, bipolar disorder, or psychosis) that might be adversely affected by altered states of consciousness?",
+  "Do you have any eye conditions, such as glaucoma, that could be exacerbated by changes in blood pressure or oxygen levels during breathwork?"
+];
+
+const state = {
+  step: 0, // 0 = intake, 1 = results
+  clientName: '',
+  answers: new Array(QUESTIONS.length).fill(null) // true = Yes, false = No
+};
+
+function render(){
+  state.step === 0 ? renderForm() : renderResults();
+}
+
+function renderForm(){
+  const card = document.getElementById('cardArea');
+  card.innerHTML = `
+    <p class="section-label">Client screening</p>
+    <h2 class="section-title">Before we begin</h2>
+    <p class="section-desc">Please answer honestly — this helps us keep your session safe and appropriate for you.</p>
+
+    <div class="gate-field">
+      <label for="cName">Client name</label>
+      <input type="text" id="cName" value="${state.clientName}" placeholder="e.g. Sarah Thompson">
+    </div>
+
+    <div id="qlist"></div>
+    <p class="error" id="err"></p>
+    <div class="navrow" style="justify-content:center;">
+      <button class="primary" id="seeResults">See summary</button>
+    </div>
+  `;
+
+  document.getElementById('cName').addEventListener('input', e=>{ state.clientName = e.target.value; });
+
+  const qlist = document.getElementById('qlist');
+  qlist.innerHTML = QUESTIONS.map((q,i)=>`
+    <div class="qitem">
+      <p class="q">${i+1}. ${q}</p>
+      <div class="yn" data-idx="${i}">
+        <button type="button" class="${state.answers[i]===false?'sel-no':''}" data-val="no">No</button>
+        <button type="button" class="${state.answers[i]===true?'sel-yes':''}" data-val="yes">Yes</button>
+      </div>
+    </div>
+  `).join('');
+
+  qlist.querySelectorAll('.yn').forEach(group=>{
+    const idx = parseInt(group.dataset.idx,10);
+    group.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        state.answers[idx] = btn.dataset.val === 'yes';
+        group.querySelectorAll('button').forEach(b=>b.classList.remove('sel-no','sel-yes'));
+        btn.classList.add(btn.dataset.val === 'yes' ? 'sel-yes' : 'sel-no');
+        document.getElementById('err').textContent = '';
+      });
+    });
+  });
+
+  document.getElementById('seeResults').addEventListener('click', ()=>{
+    if(state.answers.some(a=>a===null)){
+      document.getElementById('err').textContent = 'Please answer every question before continuing.';
+      return;
+    }
+    state.step = 1;
+    render();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+}
+
+function flaggedIndexes(){
+  return state.answers.map((a,i)=>a ? i : -1).filter(i=>i>=0);
+}
+
+function renderResults(){
+  const card = document.getElementById('cardArea');
+  const flagged = flaggedIndexes();
+  const clear = flagged.length === 0;
+
+  card.innerHTML = `
+    <p class="section-label">Screening summary</p>
+    <h2 class="section-title">Results</h2>
+    ${state.clientName ? `<p class="section-desc">Client: ${state.clientName}</p>` : ''}
+
+    <div style="text-align:center;">
+      <span class="resultbadge ${clear ? 'clear' : 'flagged'}">${clear ? 'No contraindications flagged' : `${flagged.length} item${flagged.length===1?'':'s'} flagged`}</span>
+    </div>
+
+    ${clear ? `
+      <p style="text-align:center; color:var(--muted); font-size:0.9rem;">No contraindications were identified from the responses given. Standard breathwork screening precautions still apply.</p>
+    ` : `
+      <div class="alertbox">
+        This client answered "Yes" to one or more contraindication questions. Consider discussing their response further, or recommending a consultation with a healthcare professional before proceeding with the breathwork session.
+      </div>
+      <div class="flaglist">
+        ${flagged.map(i => `<div class="flagrow">${i+1}. ${QUESTIONS[i]}</div>`).join('')}
+      </div>
+    `}
+
+    <div class="downloadrow">
+      <button class="primary" id="pdfBtn">Download as PDF</button>
+      <div class="btnrow" style="margin-top:0.75rem;">
+        <button class="ghost" id="txtBtn">Download as text file</button>
+      </div>
+    </div>
+
+    <div class="navrow" style="justify-content:center; margin-top:1.25rem;">
+      <button class="ghost" id="backBtn">Back to form</button>
+      <button class="ghost" id="restartBtn">Start over</button>
+    </div>
+  `;
+
+  document.getElementById('pdfBtn').addEventListener('click', downloadPdf);
+  document.getElementById('txtBtn').addEventListener('click', downloadTxt);
+  document.getElementById('backBtn').addEventListener('click', ()=>{ state.step = 0; render(); window.scrollTo({top:0, behavior:'smooth'}); });
+  document.getElementById('restartBtn').addEventListener('click', ()=>{
+    state.step = 0;
+    state.clientName = '';
+    state.answers = new Array(QUESTIONS.length).fill(null);
+    render();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+}
+
+function safeFileBase(){
+  const safeName = state.clientName ? state.clientName.replace(/[^a-z0-9]+/gi,'-').toLowerCase() : 'client';
+  const safeDate = new Date().toISOString().slice(0,10);
+  return `altus-sanctuary-contraindications-${safeName}-${safeDate}`;
+}
+
+function downloadTxt(){
+  const flagged = flaggedIndexes();
+  const clear = flagged.length === 0;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-AU', {day:'numeric', month:'long', year:'numeric'});
+  const lines = [];
+  lines.push('ALTUS SANCTUARY — CONTRAINDICATIONS & SAFETY SCREENING');
+  lines.push('='.repeat(52));
+  lines.push('');
+  if(state.clientName) lines.push(`Client: ${state.clientName}`);
+  lines.push(`Date: ${dateStr}`);
+  lines.push('');
+  lines.push(clear ? 'RESULT: No contraindications flagged.' : `RESULT: ${flagged.length} item(s) flagged.`);
+  lines.push('');
+  if(!clear){
+    lines.push('This client answered "Yes" to one or more contraindication');
+    lines.push('questions. Consider discussing their response further, or');
+    lines.push('recommending a consultation with a healthcare professional');
+    lines.push('before proceeding with the breathwork session.');
+    lines.push('');
+    lines.push('Flagged items:');
+    flagged.forEach(i => lines.push(`${i+1}. ${QUESTIONS[i]}`));
+    lines.push('');
+  }
+  lines.push('-'.repeat(52));
+  lines.push('FULL RESPONSES');
+  lines.push('-'.repeat(52));
+  QUESTIONS.forEach((q,i)=>{
+    lines.push(`${i+1}. ${q}`);
+    lines.push(`   Answer: ${state.answers[i] ? 'Yes' : 'No'}`);
+  });
+
+  const blob = new Blob([lines.join('\n')], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${safeFileBase()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function downloadPdf(){
+  try{
+    const { jsPDF } = window.jspdf;
+    const flagged = flaggedIndexes();
+    const clear = flagged.length === 0;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-AU', {day:'numeric', month:'long', year:'numeric'});
+
+    const doc = new jsPDF({unit:'pt', format:'a4'});
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 48;
+    const maxW = pageW - margin*2;
+
+    const logoScale = 0.5;
+    const logoW = 100 * logoScale;
+    const originX = pageW/2 - logoW/2;
+    const originY = 26;
+    const pad = 10;
+    doc.setFillColor(0,0,0);
+    doc.roundedRect(originX - pad, originY - pad, logoW + pad*2, logoW + pad*2, 6, 6, 'F');
+    function pt(x,y){ return [originX + x*logoScale, originY + y*logoScale]; }
+    doc.setFillColor(201,165,103);
+    doc.circle(...pt(72,24), 9*logoScale, 'F');
+    doc.setFillColor(143,160,132);
+    doc.triangle(...pt(10,78), ...pt(30,50), ...pt(50,78), 'F');
+    doc.setFillColor(74,128,121);
+    doc.triangle(...pt(34,78), ...pt(58,26), ...pt(82,78), 'F');
+    doc.setFillColor(201,165,103);
+    doc.triangle(...pt(60,78), ...pt(80,46), ...pt(96,78), 'F');
+
+    let y = originY + logoW + pad + 22;
+
+    function addLine(text, opts={}){
+      const size = opts.size || 11;
+      const gap = opts.gap || 16;
+      const bold = opts.bold || false;
+      const color = opts.color || [30,30,30];
+      const align = opts.align || 'left';
+      doc.setFont('helvetica', bold ? 'bold' : 'normal');
+      doc.setFontSize(size);
+      doc.setTextColor(color[0], color[1], color[2]);
+      const split = doc.splitTextToSize(text, maxW);
+      split.forEach(line=>{
+        if(y > 780){ doc.addPage(); y = 60; }
+        const x = align === 'center' ? pageW/2 : margin;
+        doc.text(line, x, y, {align});
+        y += gap;
+      });
+    }
+
+    addLine('Altus Sanctuary', {size:20, bold:true, gap:26, color:[74,128,121], align:'center'});
+    addLine('Contraindications & Safety Screening', {size:13, gap:22, color:[100,100,100], align:'center'});
+    y += 6;
+    if(state.clientName) addLine(`Client: ${state.clientName}`, {size:11, gap:16});
+    addLine(`Date: ${dateStr}`, {size:11, gap:22});
+
+    addLine(clear ? 'Result: No contraindications flagged' : `Result: ${flagged.length} item(s) flagged`,
+      {size:14, bold:true, gap:22, color: clear ? [143,160,132] : [201,127,103]});
+
+    if(!clear){
+      addLine('This client answered "Yes" to one or more contraindication questions. Consider discussing their response further, or recommending a consultation with a healthcare professional before proceeding with the breathwork session.', {size:10, gap:14, color:[180,90,60]});
+      y += 8;
+      addLine('Flagged items', {size:12, bold:true, gap:18});
+      flagged.forEach(i=>{
+        addLine(`${i+1}. ${QUESTIONS[i]}`, {size:10, gap:14});
+      });
+      y += 8;
+    }
+
+    addLine('Full responses', {size:12, bold:true, gap:18});
+    QUESTIONS.forEach((q,i)=>{
+      addLine(`${i+1}. ${q}`, {size:9.5, gap:13});
+      addLine(`Answer: ${state.answers[i] ? 'Yes' : 'No'}`, {size:9.5, bold:true, gap:15, color: state.answers[i] ? [180,90,60] : [90,90,90]});
+    });
+
+    doc.save(`${safeFileBase()}.pdf`);
+  }catch(e){
+    alert("Couldn't generate the PDF — please try the text file download instead.");
+  }
+}
+
+render();
+</script>
+</body>
+</html>
